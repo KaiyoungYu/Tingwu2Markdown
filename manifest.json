@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "TingDown",
+  "version": "1.0",
+  "description": "将阿里通义听悟转录的文本转成markdown文件.",
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": ["popup.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "tabs",
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"], 
+      "js": ["popup.js", "content-script.js"]
+    }
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ]
+}
