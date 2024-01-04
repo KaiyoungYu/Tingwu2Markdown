@@ -1,47 +1,30 @@
 
-// function sendMessageToChatGPT() {
-//   console.log("点击了按钮");
-//   // 点击 CHAT 按钮的代码
-//   const outputElement = document.getElementById("output");
-//   outputElement.innerText = "点击了按钮";
-
-
-//   // 发送请求到 ChatGPT 的 API endpoint
-//   fetch("https://api.openai.com/v1/chat/completions", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "Authorization": "Bearer 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"
-//     },
-//     body: JSON.stringify({
-//       "model": "gpt-3.5-turbo",
-//       "messages": [{"role": "user", 
-//                     "content": "Hello! Who are you?"}]
-//     })
-//   })
-//   .then(response => response.json())
-//   .then(data => {
-//     // 将返回的文本展示在页面上
-//     const outputElement2 = document.getElementById("output2");
-//     outputElement2.innerText = data.choices[0].message.content;
-//   });
-
-// }
-
-
-function getSomething() {
-  var someting = document.getElementsByClassName('multiEllipsis-text');
-  const outputElement = document.getElementById("output");
-  console.log(someting[0].innerText);
-  console.log(someting);
-  console.log('DONE');
-  outputElement.innerText = someting[0].innerText
-}
 
 function showOutput(result) {
   const outputElement = document.getElementById("output");
-  outputElement.innerText = result
+  outputElement.innerText = result;
+  console.log(result);
 }
+
+
+function getSomething() {
+  chrome.tabs.query({ active: true, currentWindow: true }, async function(tabs) {
+    var tab = tabs[0];
+    var tabId = tab.id;
+
+    // 使用 executeScript 注入并运行代码
+    const [res] = await chrome.scripting.executeScript({
+      target: { tabId },
+      function: () => {          
+          const r = document.getElementsByClassName("multiEllipsis-text")[0].textContent
+          console.log(r);
+          return r;
+      }
+  });
+  showOutput(res.result)
+  });
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
   var chatBtn = document.getElementById('chat-btn');
@@ -53,16 +36,39 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-
-chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-  var tab = tabs[0];
-  tab_title = tab.title;
-  chrome.tabs.executeScript(tab.id, {
-    code: 'document.getElementsByClassName("multiEllipsis-text")[0].innerText'
-  }, showOutput);
-});
+function showOutput2(result) {
+  const outputElement = document.getElementById("output");
+  outputElement.innerHTML = result
+}
 
 
+// get 全文概要
+// chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//   var tab = tabs[0];
+//   tab_title = tab.title;
+//   chrome.tabs.executeScript(tab.id, {
+//     code: 'document.getElementsByClassName("multiEllipsis-text")[0].innerText'
+//   }, showOutput);
+// });
+
+
+
+
+// get 章节速览
+// chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//   var tab = tabs[0];
+//   tab_title = tab.title;
+//   chrome.tabs.executeScript(tab.id, {
+//     code: 'document.getElementsByClassName("multiEllipsis-text")'
+//   }, showOutput2);
+// });
+
+
+// get 发言总结
+
+// get 要点回顾
+
+// get 原文
 
 
 // // 获取所有类名为 "parent" 的元素
