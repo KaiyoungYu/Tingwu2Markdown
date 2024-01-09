@@ -1,0 +1,28 @@
+body {
+  min-width: 300px;
+  max-width: 300px;
+}
+
+h1 {
+  color: rgb(96, 92, 229);
+}
+
+.btn {
+  padding: 3px 8px;
+  border-color: blueviolet;
+  background-color: rgba(96, 92, 229, 0.08);
+  border-radius: 4px;
+  font-weight: 400;
+  font-size: 14px;
+  color: rgb(96, 92, 229);
+  margin-right: 8px;
+  margin-top: 12px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  display: block;
+}
+
+#text-demo {
+  background-color: #ECEDFEFF;
+}

@@ -1,56 +1,52 @@
 var allres = [];
+var title = '';
 
-function showOutput(result) {
-  const outputElement = document.getElementById("output");
-  outputElement.innerHTML = result;
-  console.log('output');
-  console.log(result);
-}
-
-
-function getSomething() {
+// get wanted Contents
+function getContent() {
   chrome.tabs.query({ active: true, currentWindow: true }, async function(tabs) {
     var tab = tabs[0];
     var tabId = tab.id;
 
-
     // 使用 executeScript 注入并运行代码
     // get 全文概要
-    // const [res] = await chrome.scripting.executeScript({
-    //   target: { tabId },
-    //   function: () => {          
-    //       const r = document.getElementsByClassName("multiEllipsis-text")[0].textContent
-    //       console.log(r);
-    //       return r;
-    //   }
-    // });
+    const [res_qwgy] = await chrome.scripting.executeScript({
+      target: { tabId },
+      function: () => {
+        res = ['## 全文概要\n'];
+        const r = document.getElementsByClassName("multiEllipsis-text")[0].textContent + '\n';
+        console.log('全文概要');
+        console.log(r);
+        res.push(r);
+        return res;
+    }
+    });
 
-    // get 章节速览
-    // const [res] = await chrome.scripting.executeScript({
-    //   target: { tabId },
-    //   function: () => {          
-    //       res = [];
-          
-    //       const r_time = document.getElementsByClassName("adendaTimeItem-time-content")
-    //       const r_time_line = document.getElementsByClassName("adendaTimeItem-value-line")
-    //       const r_time_value = document.getElementsByClassName("adendaTimeItem-value-des")
-
-    //       for( i = 0; i < r_time_value.length; i++){
-    //         res.push('#### `' + r_time[i].innerText + '` ' + r_time_line[i].innerText + '\n' + r_time_value[i].innerText + '\n')
-    //         console.log(res[i])
-    //       }
-          
-    //       // console.log(res);
-    //       return res;
-    //   }
-    // });
-
-
-    // get 发言总结
-    const [res] = await chrome.scripting.executeScript({
+    //get 章节速览
+    const [res_zjsl] = await chrome.scripting.executeScript({
       target: { tabId },
       function: () => {          
-          res = [];
+          res = ['\n## 章节速览\n'];
+          
+          const r_time = document.getElementsByClassName("adendaTimeItem-time-content")
+          const r_time_line = document.getElementsByClassName("adendaTimeItem-value-line")
+          const r_time_value = document.getElementsByClassName("adendaTimeItem-value-des")
+
+          for( i = 0; i < r_time_value.length; i++){
+            res.push('#### `' + r_time[i].innerText + '` ' + r_time_line[i].innerText + '\n' + r_time_value[i].innerText + '\n')
+            // console.log(res[i])
+          }
+          
+          console.log('章节速览');
+          console.log(res);
+          return res;
+      }
+    });
+
+    // get 发言总结
+    const [res_fyzj] = await chrome.scripting.executeScript({
+      target: { tabId },
+      function: () => {          
+          res = ['\n## 发言总结\n'];
           
           const r_speaker = document.getElementsByClassName('sc-hfAwGc hCJRwt')
           const r_speaker_content = document.getElementsByClassName('sc-hwFkLi jPgJyi')
@@ -66,47 +62,74 @@ function getSomething() {
       }
     });
 
-    // allres.concat(Array.from(res.result));
-
-
-    
-    // get 要点回顾
-
     // get 原文
-    console.log('res.result');
-    console.log(res.result);
-    console.log('allres');
-    allres = allres.concat(res.result);
-    console.log(allres)
+    const [res_yw] = await chrome.scripting.executeScript({
+      target: { tabId },
+      function: () => {          
+          res = ['\n## 原文\n'];
+
+          const r_speaker =  document.getElementsByClassName("sc-jvIDnw ftNyTy speaker")
+          const r_speaker_time = document.getElementsByClassName("sc-eCzpMH mfNEv time")
+          const r_content = document.getElementsByClassName("sc-NsUQg gJEWrZ")
+
+          for( i = 0; i < r_speaker.length; i++){
+            res.push('`' + r_speaker[i].innerText + '` `' + r_speaker_time[i].innerText + '`\n');
+            res.push(r_content[i].innerText + '\n\n');
+            console.log(res[i]);
+          }
+          
+          // console.log(res);
+          return res;
+      }
+    });
+
+    // get title
+    const [res_title] = await chrome.scripting.executeScript({
+      target: { tabId },
+      function: () => {          
+          res = document.getElementsByTagName('title')[0].innerText;
+          return res;
+      }
+    });
+
+
+    title = res_title.result;
+    allres = allres.concat(res_qwgy.result, res_zjsl.result, res_fyzj.result, res_yw.result);
     showOutput(allres)
   });
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
-  var chatBtn = document.getElementById('chat-btn');
-  chatBtn.addEventListener('click', getSomething);
-  var chatBtn2 = document.getElementById('chat-btn2');
-  // chatBtn2.addEventListener('click', () => {
-  //   const outputElement2 = document.getElementById("output2");
-  //   outputElement2.innerText = 'G2'
-  // });
-  chatBtn2.addEventListener('click', showOutput2);
-});
-
-function showOutput2(result) {
-  const outputElement2 = document.getElementById("output2");
-  outputElement2.innerHTML = '点击了下载';
-  const outputElement = document.getElementById("output");
-  downloadFile('download.md', allres.join(""));
+// 展示抓取到的文字
+function showOutput(result) {
+  const outputElement = document.getElementById("text-demo");
+  outputElement.innerHTML = result;
 }
 
-// 尝试下载功能
+
+// BTN 
+document.addEventListener('DOMContentLoaded', function() {
+  var chatBtn = document.getElementById('btn-grab');
+  chatBtn.addEventListener('click', getContent);
+  
+  var chatBtn2 = document.getElementById('btn-download');
+  chatBtn2.addEventListener('click', () => {
+    const textElement = document.getElementById("text-hint");
+    downloadFile(title+'.md' || 'download.md', allres.join(""));
+    
+    if(allres.length === 0) {
+      textElement.innerText = '请先抓取';
+    } 
+    else {
+      textElement.innerText = '已下载！';
+    }
+  });
+});
+
+
+// 下载功能 copied from web
 function downloadFile(filename, content) {
   // 它适用于所有支持 HTML5 的浏览器，因为它使用了 <a> 元素的下载属性：
-  const outputElement2 = document.getElementById("output3");
-  outputElement2.innerHTML = 'download called';
-
   const element = document.createElement("a");
 
   // Blob 是一种可以存储二进制数据的数据类型
